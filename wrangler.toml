@@ -1,0 +1,10 @@
+name = "YOUR_WORKER_NAME"
+main = "worker.js"
+compatibility_date = "2023-08-01"
+
+[vars]
+PIXEL_ID = "1091970342909970"
+ACCESS_TOKEN = "EAAeAAwIifDgBPIWlb9op95UrRg3ssVOLgqp3KwuPu2zJ15pzlt8yUORE3DFv4NCmi8pBZAPMGpTYlVHFyuGZBeeEm6lchCT3j8ZCBwuX0Le3A3l8wYzPTA3qCM7fQEnN4s2fDLjDNnaaWaqRxo91oZBZC76FTXDxdELxoTJZAOSZA7uPcSfQF8HgioaemJhzAZDZD"
+
+[triggers]
+routes = []
