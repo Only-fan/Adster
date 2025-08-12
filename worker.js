@@ -8,8 +8,8 @@ export default {
     const accessToken = "EAAeAAwIifDgBPIWlb9op95UrRg3ssVOLgqp3KwuPu2zJ15pzlt8yUORE3DFv4NCmi8pBZAPMGpTYlVHFyuGZBeeEm6lchCT3j8ZCBwuX0Le3A3l8wYzPTA3qCM7fQEnN4s2fDLjDNnaaWaqRxo91oZBZC76FTXDxdELxoTJZAOSZA7uPcSfQF8HgioaemJhzAZDZD";
 
     // Third-party links for Yes/No
-    const yesRedirect = "https://only-fan.github.io/Juicypleasure/"; // Your YES link
-    const noRedirect = "https://only-fan.github.io/Juicypleasure/";  // Your NO link
+    const yesRedirect = "https://only-fan.github.io/Juicypleasure/"; // YES link
+    const noRedirect = "https://only-fan.github.io/Juicypleasure/";  // NO link
 
     // Send Facebook CAPI Event
     async function sendFBEvent(eventName) {
@@ -20,6 +20,7 @@ export default {
             event_time: Math.floor(Date.now() / 1000),
             action_source: "website",
             event_source_url: request.url,
+            test_event_code: "TEST55612", // <-- Added for Test Events
             user_data: {
               client_ip_address: request.headers.get("CF-Connecting-IP"),
               client_user_agent: request.headers.get("User-Agent")
