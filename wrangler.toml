@@ -1,4 +1,4 @@
-name = "juicypleasure-worker"
+name = "juicypleasure-woker"
 main = "worker.js"
 compatibility_date = "2025-08-12"
 
