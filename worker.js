@@ -1,44 +1,84 @@
 export default {
   async fetch(request) {
     const url = new URL(request.url);
-    const path = url.pathname.toLowerCase();
 
-    // Pixel + token
-    const pixelId = "1091970342909970";
-    const accessToken = "EAAeAAwIifDgBPIWlb9op95UrRg3ssVOLgqp3KwuPu2zJ15pzlt8yUORE3DFv4NCmi8pBZAPMGpTYlVHFyuGZBeeEm6lchCT3j8ZCBwuX0Le3A3l8wYzPTA3qCM7fQEnN4s2fDLjDNnaaWaqRxo91oZBZC76FTXDxdELxoTJZAOSZA7uPcSfQF8HgioaemJhzAZDZD";
-
-    // Where to send users after signup click
-    const offerUrl = "https://only-fan.github.io/Juicypleasure/"; // change to your real offer if needed
-
-    // Helper: send CAPI (non-blocking)
-    function sendFBEvent(eventName, req) {
-      const payload = {
-        data: [{
-          event_name: eventName,
-          event_time: Math.floor(Date.now() / 1000),
-          action_source: "website",
-          event_source_url: req.url,
-          // Uncomment while testing in Events Manager (Test Events tab):
-          // test_event_code: "TEST55612",
-          user_data: {
-            client_ip_address: req.headers.get("CF-Connecting-IP"),
-            client_user_agent: req.headers.get("User-Agent")
-          }
-        }]
-      };
-      // fire & forget
-      fetch(`https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      }).catch(() => {});
+    // Handle button redirects
+    if (url.pathname === "/yes") {
+      return Response.redirect("https://only-fan.github.io/Juicypleasure/", 302);
+    }
+    if (url.pathname === "/no") {
+      return Response.redirect("https://juicy-pleasure.github.io/Juicypleasure/", 302);
     }
 
-    if (path === "/signup") {
-      sendFBEvent("Lead", request);             // server-side event
-      return Response.redirect(offerUrl, 302);  // instant redirect
+    // Default: show the LP
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adult Verification</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      background: url("Background.jpg") no-repeat center center fixed;
+      background-size: cover;
     }
+    .overlay {
+      background: rgba(0,0,0,0.7);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+    .box {
+      background: rgba(20,20,20,0.85);
+      padding: 30px;
+      border-radius: 14px;
+      max-width: 400px;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 15px;
+    }
+    p {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    .btn {
+      display: inline-block;
+      background: #ff004f;
+      color: #fff;
+      font-weight: bold;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      margin: 8px;
+    }
+    .btn:hover {
+      background: #ff2e6f;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="box">
+      <h1>Adult Content Verification</h1>
+      <p>You must verify your age to continue.</p>
+      <a href="/yes" class="btn">I am 18+</a>
+      <a href="/no" class="btn">Exit</a>
+    </div>
+  </div>
+</body>
+</html>
+    `;
 
-    return new Response("OK", { status: 200 });
-  }
+    return new Response(html, {
+      headers: { "content-type": "text/html;charset=UTF-8" },
+    });
+  },
 };
