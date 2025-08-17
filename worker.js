@@ -1,84 +1,55 @@
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const url = new URL(request.url);
+    const choice = (url.searchParams.get("choice") || "").toLowerCase();
 
-    // Handle button redirects
-    if (url.pathname === "/yes") {
-      return Response.redirect("https://only-fan.github.io/Juicypleasure/", 302);
-    }
-    if (url.pathname === "/no") {
-      return Response.redirect("https://juicy-pleasure.github.io/Juicypleasure/", 302);
+    // Where to send the user
+    const yesRedirect = env.ADSTERRA_LINK; // your real offer link
+    const noRedirect  = env.NO_REDIRECT || "https://google.com";
+
+    // For CAPI matching
+    const ip  = request.headers.get("CF-Connecting-IP");
+    const ua  = request.headers.get("User-Agent");
+    const ref = request.headers.get("Referer") || url.toString();
+
+    // Helper: send event to Facebook CAPI
+    async function sendCapi(eventName, valueUsd) {
+      const payload = {
+        data: [{
+          event_name: eventName,
+          event_time: Math.floor(Date.now() / 1000),
+          action_source: "website",
+          event_source_url: ref,
+          user_data: {
+            client_ip_address: ip,
+            client_user_agent: ua
+          },
+          custom_data: valueUsd != null ? { value: valueUsd, currency: "USD" } : undefined
+        }]
+      };
+
+      try {
+        await fetch(`https://graph.facebook.com/v17.0/${env.PIXEL_ID}/events?access_token=${env.ACCESS_TOKEN}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        // Don’t block redirect if CAPI fails
+        console.error("CAPI error:", e);
+      }
     }
 
-    // Default: show the LP
-    const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adult Verification</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: #fff;
-      background: url("Background.jpg") no-repeat center center fixed;
-      background-size: cover;
+    // Route logic
+    if (choice === "yes") {
+      // Count this as a Lead with value for optimization
+      await sendCapi("Lead", 4.00);
+      return Response.redirect(yesRedirect, 302);
     }
-    .overlay {
-      background: rgba(0,0,0,0.7);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 20px;
-    }
-    .box {
-      background: rgba(20,20,20,0.85);
-      padding: 30px;
-      border-radius: 14px;
-      max-width: 400px;
-    }
-    h1 {
-      font-size: 28px;
-      margin-bottom: 15px;
-    }
-    p {
-      font-size: 16px;
-      margin-bottom: 20px;
-    }
-    .btn {
-      display: inline-block;
-      background: #ff004f;
-      color: #fff;
-      font-weight: bold;
-      padding: 12px 20px;
-      border-radius: 8px;
-      text-decoration: none;
-      margin: 8px;
-    }
-    .btn:hover {
-      background: #ff2e6f;
-    }
-  </style>
-</head>
-<body>
-  <div class="overlay">
-    <div class="box">
-      <h1>Adult Content Verification</h1>
-      <p>You must verify your age to continue.</p>
-      <a href="/yes" class="btn">I am 18+</a>
-      <a href="/no" class="btn">Exit</a>
-    </div>
-  </div>
-</body>
-</html>
-    `;
 
-    return new Response(html, {
-      headers: { "content-type": "text/html;charset=UTF-8" },
-    });
-  },
+    // Optional: you could send a low-value ViewContent for "no" clicks
+    // await sendCapi("ViewContent", 0.00);
+
+    return Response.redirect(noRedirect, 302);
+  }
 };
