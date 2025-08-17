@@ -1,37 +1,34 @@
 export default {
-  async fetch(request, env) {
+  async fetch(request) {
     const url = new URL(request.url);
-    const event = url.searchParams.get("event");
+    const choice = url.searchParams.get("choice");
 
-    // Redirect destinations
-    const yesRedirect = env.YES_REDIRECT || "https://only-fan.github.io/Juicypleasure/";
-    const noRedirect = env.NO_REDIRECT || "https://only-fan.github.io/Juicypleasure/";
-
-    // Map events
-    let fbEvent = "ViewContent";
-    let redirectUrl = noRedirect;
-
-    if (event === "lead") {
-      fbEvent = "Lead";
-      redirectUrl = yesRedirect;
-    } else if (event === "exit") {
-      fbEvent = "PageView";
-      redirectUrl = noRedirect;
+    // Default redirect if no choice
+    if (!choice) {
+      return Response.redirect("https://only-fan.github.io/Juicypleasure/", 302);
     }
 
-    // Send to Facebook CAPI
-    await fetch(`https://graph.facebook.com/v17.0/${env.PIXEL_ID}/events?access_token=${env.ACCESS_TOKEN}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        data: [{
-          event_name: fbEvent,
-          event_time: Math.floor(Date.now() / 1000),
-          action_source: "website"
-        }]
-      })
-    });
+    // ✅ Handle choice events
+    if (choice === "yes") {
+      // user clicked "I am 18+"
+      return Response.redirect("https://only-fan.github.io/Juicypleasure/", 302);
+    }
 
-    return Response.redirect(redirectUrl, 302);
+    if (choice === "no") {
+      // user clicked "Exit"
+      return Response.redirect("https://www.google.com/", 302);
+    }
+
+    // ✅ For custom events later
+    if (choice === "lead") {
+      return Response.redirect("https://only-fan.github.io/Juicypleasure/", 302);
+    }
+
+    if (choice === "rejected") {
+      return Response.redirect("https://www.google.com/", 302);
+    }
+
+    // fallback
+    return new Response("Invalid choice", { status: 400 });
   }
-};
+}
