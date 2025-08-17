@@ -1,51 +1,45 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const choice = url.searchParams.get("choice");
 
-    // Facebook Pixel settings
-    const pixelId = "1091970342909970";
-    const accessToken = env.ACCESS_TOKEN; // stored in wrangler.toml
-    const fbEndpoint = `https://graph.facebook.com/v17.0/${pixelId}/events?access_token=${accessToken}`;
+    // --- SETTINGS ---
+    const PIXEL_ID = "1091970342909970"; // your pixel ID
+    const ACCESS_TOKEN = env.FB_ACCESS_TOKEN; // stored in Cloudflare
+    const TEST_CODE = "TEST89426"; // your current test_event_code
+    const USE_TEST_MODE = true; // change to false when going live
+    // ----------------
 
-    // Base event data
-    const baseEvent = {
-      event_time: Math.floor(Date.now() / 1000),
-      action_source: "website",
-      event_source_url: request.url,
-    };
+    if (url.pathname === "/track") {
+      const { event_name, event_id, user_data } = await request.json();
 
-    // Decide redirect + event
-    let redirectUrl = "https://only-fan.github.io/Juicypleasure/";
-    let eventName = "ViewContent"; // default
+      const payload = {
+        data: [
+          {
+            event_name,
+            event_time: Math.floor(Date.now() / 1000),
+            event_id: event_id || crypto.randomUUID(),
+            action_source: "website",
+            event_source_url: url.origin,
+            user_data,
+          },
+        ],
+        ...(USE_TEST_MODE ? { test_event_code: TEST_CODE } : {}),
+      };
 
-    if (choice === "yes") {
-      eventName = "AgeConfirmed";
-      redirectUrl = "https://only-fan.github.io/Juicypleasure/";
-    } else if (choice === "no") {
-      eventName = "AgeRejected";
-      redirectUrl = "https://www.google.com/";
-    } else if (choice === "lead") {
-      eventName = "Lead";
-      redirectUrl = "https://only-fan.github.io/Juicypleasure/";
+      const fbResponse = await fetch(
+        `https://graph.facebook.com/v18.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      return new Response(await fbResponse.text(), {
+        status: fbResponse.status,
+      });
     }
 
-    // Fire Pixel event
-    await fetch(fbEndpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        data: [{
-          ...baseEvent,
-          event_name: eventName,
-          custom_data: {
-            currency: "USD",
-            value: choice === "lead" ? 3.00 : 0.00  // your $2-$4 CPM avg
-          }
-        }]
-      }),
-    });
-
-    return Response.redirect(redirectUrl, 302);
-  }
-  }
+    return new Response("Worker up ✅", { status: 200 });
+  },
+};
