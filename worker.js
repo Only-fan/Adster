@@ -3,45 +3,49 @@ export default {
     const url = new URL(request.url);
     const choice = url.searchParams.get("choice");
 
+    // Facebook Pixel settings
+    const pixelId = "1091970342909970";
+    const accessToken = env.ACCESS_TOKEN; // stored in wrangler.toml
+    const fbEndpoint = `https://graph.facebook.com/v17.0/${pixelId}/events?access_token=${accessToken}`;
+
+    // Base event data
+    const baseEvent = {
+      event_time: Math.floor(Date.now() / 1000),
+      action_source: "website",
+      event_source_url: request.url,
+    };
+
+    // Decide redirect + event
+    let redirectUrl = "https://only-fan.github.io/Juicypleasure/";
+    let eventName = "ViewContent"; // default
+
     if (choice === "yes") {
-      await sendEvent(env, "Lead", { value: 3.00, currency: "USD" });
-      return Response.redirect(env.ADSTERRA_LINK, 302);
+      eventName = "AgeConfirmed";
+      redirectUrl = "https://only-fan.github.io/Juicypleasure/";
     } else if (choice === "no") {
-      return Response.redirect(env.NO_REDIRECT, 302);
+      eventName = "AgeRejected";
+      redirectUrl = "https://www.google.com/";
+    } else if (choice === "lead") {
+      eventName = "Lead";
+      redirectUrl = "https://only-fan.github.io/Juicypleasure/";
     }
 
-    // Fire ViewContent when LP loads
-    await sendEvent(env, "ViewContent", { value: 0.01, currency: "USD" });
-    return new Response("Adult LP Worker running...");
-  },
-};
-
-async function sendEvent(env, eventName, params) {
-  const body = {
-    data: [
-      {
-        event_name: eventName,
-        event_time: Math.floor(Date.now() / 1000),
-        action_source: "website",
-        event_source_url: "https://your-landing-page-domain.com",
-        user_data: {}, // we can enrich later
-        custom_data: params,
-      },
-    ],
-  };
-
-  const res = await fetch(
-    `https://graph.facebook.com/v18.0/${env.PIXEL_ID}/events?access_token=${env.ACCESS_TOKEN}`,
-    {
+    // Fire Pixel event
+    await fetch(fbEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }
-  );
+      body: JSON.stringify({
+        data: [{
+          ...baseEvent,
+          event_name: eventName,
+          custom_data: {
+            currency: "USD",
+            value: choice === "lead" ? 3.00 : 0.00  // your $2-$4 CPM avg
+          }
+        }]
+      }),
+    });
 
-  // Log status + error message if any
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Meta Pixel API Error:", errorText);
+    return Response.redirect(redirectUrl, 302);
   }
-                                         }
+  }
