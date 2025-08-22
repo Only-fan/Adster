@@ -1,12 +1,3 @@
 name = "juicypleasure-worker"
 main = "worker.js"
 compatibility_date = "2024-08-01"
-
-[vars]
-# Facebook
-PIXEL_ID = "1091970342909970"
-ACCESS_TOKEN = "EAAeAAwIifDgBPInYxHNFjUJPpc5oiWpR5UCxJXldrOPXZC6cZAlEzORekHasNxOZBI90yCZB6i6yoQb3VZC328OhxiTV1BIUWGgQS2bFDjhi9TkJ8mJ3GBsydm3BbNarz8Eo0lLD5lbAnlsBLin4t1JLqGowwAy18h1aFSZCAu1lZBDcZAi5bJS3VV17KSdOIAZDZD"
-
-# Redirects
-ADSTERRA_LINK = "https://only-fan.github.io/Juicypleasure/"   # your offer URL
-NO_REDIRECT   = "https://only-fan.github.io/Juicypleasure/"                          # safe exit
