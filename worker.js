@@ -3,52 +3,62 @@ export default {
     const url = new URL(request.url);
     const choice = url.searchParams.get("choice");
 
-    // 🔑 Your Pixel ID & Access Token
+    // Use environment variable for access token
     const PIXEL_ID = "1091970342909970";
-    const ACCESS_TOKEN = "EAAeAAwIifDgBPOpWtJncqjlyDTzliqcGy5iV91NDqIOXuUr6l6WRv4RRv7e4vgdSj27BTZC7z8Fj6DZCVfGJzeJEBYXGEOD0yYHjtRe3R1N6OoP91CbuaMvufWMfkmLfpDG1xWY7ZCNlS7ZBsxuZCgM9H6Ep1Vuj5vZAg17ZCbHJCM3clWZA8RG0RgjabqXaHgZDZD"; // replace with the token you copied
+    const ACCESS_TOKEN = env.FB_ACCESS_TOKEN;
 
-    let eventName = "ViewContent";
+    // Base event data - using CPM value of $3.00 = $0.003 per view
     let eventData = {
       event_name: "ViewContent",
       event_time: Math.floor(Date.now() / 1000),
       action_source: "website",
-      event_source_url: request.headers.get("referer") || "https://juicy-pleasure.pages.dev/",
+      event_source_url: request.headers.get("referer") || "https://only-fan.github.io/Juicypleasure/",
       user_data: {
         client_ip_address: request.headers.get("cf-connecting-ip"),
         client_user_agent: request.headers.get("user-agent")
       },
       custom_data: {
-        value: 0.003,   // same as LP
+        content_name: "Age Verification",
+        value: 0.003,  // $3.00 CPM = $0.003 per view
         currency: "USD"
       }
     };
 
     if (choice === "yes") {
       eventData.event_name = "Lead";
-      eventName = "Lead";
       eventData.custom_data = {
-        value: 0.004,  // same as LP button
+        content_name: "Age Verification - Accepted",
+        value: 3.50,  // Your conversion value
+        currency: "USD"
+      };
+    } else if (choice === "no") {
+      eventData.event_name = "Lead";
+      eventData.custom_data = {
+        content_name: "Age Verification - Rejected",
+        value: 0.00,
         currency: "USD"
       };
     }
 
-    if (choice === "no") {
-      eventData.event_name = "Rejected";
-      eventName = "Rejected";
-      delete eventData.custom_data;
-    }
+    // Send to Meta Conversion API
+    try {
+      const fbResponse = await fetch(
+        `https://graph.facebook.com/v21.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: [eventData] })
+        }
+      );
 
-    // ✅ Send to Meta Conversion API
-    const fbResponse = await fetch(
-      `https://graph.facebook.com/v21.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: [eventData] })
+      if (!fbResponse.ok) {
+        console.error("Facebook API error:", await fbResponse.text());
+      } else {
+        console.log("Successfully sent event to Facebook:", eventData.event_name);
       }
-    );
-
-    console.log("Sent to Meta Pixel:", eventName);
+    } catch (error) {
+      console.error("Error sending event to Facebook:", error);
+    }
 
     // Redirect users
     if (choice === "yes") {
@@ -57,4 +67,4 @@ export default {
       return Response.redirect("https://only-fan.github.io/Juicypleasure/", 302);
     }
   }
-};
+          }
