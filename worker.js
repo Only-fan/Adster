@@ -3,11 +3,13 @@ export default {
     const url = new URL(request.url);
     const choice = url.searchParams.get("choice");
 
-    // Use environment variable for access token
+    // ✅ CAPTURE CLICK ID PARAMETERS FROM URL
+    const fbc = url.searchParams.get("fbc");
+    const fbclid = url.searchParams.get("fbclid");
+
     const PIXEL_ID = "1091970342909970";
     const ACCESS_TOKEN = env.FB_ACCESS_TOKEN;
 
-    // Base event data - LP views worth $0.00
     let eventData = {
       event_name: "ViewContent",
       event_time: Math.floor(Date.now() / 1000),
@@ -15,11 +17,14 @@ export default {
       event_source_url: request.headers.get("referer") || "https://only-fan.github.io/Juicypleasure/",
       user_data: {
         client_ip_address: request.headers.get("cf-connecting-ip"),
-        client_user_agent: request.headers.get("user-agent")
+        client_user_agent: request.headers.get("user-agent"),
+        // ✅ ADD CLICK ID PARAMETERS BACK!
+        fbc: fbc || null,
+        fbclid: fbclid || null
       },
       custom_data: {
         content_name: "Age Verification",
-        value: 0.00,  // LP views worth $0.00 to you
+        value: 0.00,
         currency: "USD"
       }
     };
@@ -28,7 +33,7 @@ export default {
       eventData.event_name = "Lead";
       eventData.custom_data = {
         content_name: "Age Verification - Accepted",
-        value: 0.003,  // $0.003 per conversion (from your CPM)
+        value: 0.003,
         currency: "USD"
       };
     } else if (choice === "no") {
@@ -67,4 +72,4 @@ export default {
       return Response.redirect("https://only-fan.github.io/Juicypleasure/", 302);
     }
   }
-               }
+          }
