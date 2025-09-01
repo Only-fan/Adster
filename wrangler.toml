@@ -1,3 +1,30 @@
 name = "juicypleasure-worker"
 main = "worker.js"
 compatibility_date = "2024-08-01"
+
+# ✅ ADD THESE NEW LINES:
+compatibility_flags = ["nodejs_compat"]
+usage_model = "bundled"
+logpush = true
+
+[vars]
+# Example variables (optional but useful)
+ENVIRONMENT = "production"
+PIXEL_ID = "1091970342909970"
+
+# ✅ ADD THIS TRIGGERS SECTION:
+[[triggers]]
+workers_dev = true
+
+# ✅ ADD THIS DEPLOYMENT CONFIG:
+[deployment]
+env = "production"
+branch = "main"
+
+# ✅ ADD THIS LOGGING CONFIG:
+[logpush]
+enabled = true
+
+# ✅ ADD THIS TAIL CONFIG (for real-time logs):
+[tail]
+enabled = true
