@@ -1,7 +1,25 @@
 name = "juicypleasure-worker"
 main = "worker.js"
 compatibility_date = "2024-08-01"
+
+# ✅ CRITICAL ADDITIONS:
 compatibility_flags = ["nodejs_compat"]
+usage_model = "bundled"
+logpush = true  # ← ENABLE LOGPUSH HERE (not in separate section)
+
+[vars]
+ENVIRONMENT = "production"
+PIXEL_ID = "1091970342909970"
 
 [[triggers]]
 workers_dev = true
+
+[deployment]
+env = "production"
+branch = "main"
+
+# ✅ REMOVED DUPLICATE [logpush] SECTION
+# ❌ DELETE THIS: [logpush] enabled = true
+
+[tail]
+enabled = true
