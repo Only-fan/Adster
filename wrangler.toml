@@ -5,7 +5,7 @@ compatibility_date = "2024-08-01"
 # ✅ CRITICAL ADDITIONS:
 compatibility_flags = ["nodejs_compat"]
 usage_model = "bundled"
-logpush = true
+logpush = true  # ← ENABLE LOGPUSH HERE (not in separate section)
 
 [vars]
 ENVIRONMENT = "production"
@@ -18,8 +18,8 @@ workers_dev = true
 env = "production"
 branch = "main"
 
-[logpush]
-enabled = true
+# ✅ REMOVED DUPLICATE [logpush] SECTION
+# ❌ DELETE THIS: [logpush] enabled = true
 
 [tail]
 enabled = true
