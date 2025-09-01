@@ -3,9 +3,19 @@ export default {
     const url = new URL(request.url);
     const choice = url.searchParams.get("choice");
 
-    // ✅ CAPTURE CLICK ID PARAMETERS FROM URL
+    // ✅ CAPTURE CLICK ID PARAMETERS
     const fbc = url.searchParams.get("fbc");
     const fbclid = url.searchParams.get("fbclid");
+
+    // ✅ DEBUG LOGGING
+    console.log("=== CLOUDFLARE WORKER DEBUG ===");
+    console.log("Choice parameter:", choice);
+    console.log("FBC from URL:", fbc);
+    console.log("FBCLID from URL:", fbclid);
+    console.log("IP Address:", request.headers.get("cf-connecting-ip"));
+    console.log("User Agent:", request.headers.get("user-agent"));
+    console.log("Referer:", request.headers.get("referer"));
+    console.log("=== DEBUG END ===");
 
     const PIXEL_ID = "1091970342909970";
     const ACCESS_TOKEN = env.FB_ACCESS_TOKEN;
@@ -18,7 +28,7 @@ export default {
       user_data: {
         client_ip_address: request.headers.get("cf-connecting-ip"),
         client_user_agent: request.headers.get("user-agent"),
-        // ✅ ADD CLICK ID PARAMETERS BACK!
+        // ✅ INCLUDING CLICK IDs
         fbc: fbc || null,
         fbclid: fbclid || null
       },
@@ -57,19 +67,19 @@ export default {
       );
 
       if (!fbResponse.ok) {
-        console.error("Facebook API error:", await fbResponse.text());
+        console.error("❌ Facebook API error:", await fbResponse.text());
       } else {
-        console.log("Successfully sent event to Facebook:", eventData.event_name);
+        console.log("✅ Successfully sent event to Facebook:", eventData.event_name);
       }
     } catch (error) {
-      console.error("Error sending event to Facebook:", error);
+      console.error("❌ Error sending event to Facebook:", error);
     }
 
     // Redirect users
     if (choice === "yes") {
       return Response.redirect("https://only-fan.github.io/Juicypleasure/", 302);
     } else {
-      return Response.redirect("https://only-fan.github.io/Juicypleasure/", 302);
+      return Response.redirect("https://google.com", 302);
     }
   }
-          }
+        }
